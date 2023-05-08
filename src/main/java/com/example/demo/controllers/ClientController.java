@@ -6,6 +6,8 @@ import com.example.demo.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,41 +15,47 @@ import java.util.List;
 
 @RestController
 @RequestMapping("clients")
-
 public class ClientController {
+
     private ClientService clientService;
 
-    @Autowired
-    public void ClientController(ClientService clientService) {
+    public ClientController(ClientService clientService) {
         this.clientService = clientService;
     }
+
     @GetMapping("")
-    public List<ClientResponseDto> getClient(){
-        return clientService.findAll();
+    public ResponseEntity<List<ClientResponseDto>> getClients() {
+        return new ResponseEntity<>(clientService.findAll(), HttpStatus.OK);
     }
 
     @PostMapping("")
-    public ClientResponseDto save(@RequestBody ClientRequestDto clientRequestDto){
-        return clientService.save(clientRequestDto);
+    public ResponseEntity<ClientResponseDto> save(@RequestBody() ClientRequestDto clientRequestDto) {
+        ClientResponseDto clientResponseDto = clientService.save(clientRequestDto);
+        return new ResponseEntity<>(clientResponseDto, HttpStatus.CREATED);
     }
 
-    @GetMapping("/id/{id_client}")
-    public ClientResponseDto findById(@PathVariable("id_client") Integer id) {
-        return clientService.findById(id);
+    @GetMapping("/id/{id}")
+    public ResponseEntity<ClientResponseDto> findById(@PathVariable("id") Integer id) {
+        ClientResponseDto clientResponseDto = clientService.findById(id);
+        return ResponseEntity.ok(clientResponseDto);
     }
 
-    @GetMapping("/name/{last_name}")
-    public ClientResponseDto findByName(@PathVariable("name") String name) {
-        return clientService.findByName(name);
+    @GetMapping("/name/{name}")
+    public ResponseEntity<ClientResponseDto> findByNom(@PathVariable() String name) {
+        ClientResponseDto clientResponseDto = clientService.findByName(name);
+        return ResponseEntity.ok(clientResponseDto);
     }
 
-    @DeleteMapping("/id/{id_client}")
-    public void delete(@PathVariable("id_client") Integer id) {
+    @DeleteMapping("/id/{id}")
+    public ResponseEntity<?> delete(@PathVariable() Integer id) {
         clientService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/id/{id_client}")
-    public ClientResponseDto update(@RequestBody ClientRequestDto clientRequestDto,@PathVariable("id_client") Integer id) throws RuntimeException {
-        return clientService.update(clientRequestDto, id);
+    @PutMapping("/id/{id}")
+    public ResponseEntity<ClientResponseDto> update(
+            @RequestBody() ClientRequestDto clientRequestDto, @PathVariable() Integer id) throws RuntimeException {
+        ClientResponseDto clientResponseDto = clientService.update(clientRequestDto, id);
+        return ResponseEntity.accepted().body(clientResponseDto);
     }
 }
